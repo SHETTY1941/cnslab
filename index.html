@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A personal programming code library with searchable source code and one-click copying.">
+  <title>My Code Library</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2b;
+      --panel-2: #182338;
+      --border: #2a3852;
+      --text: #e8eef8;
+      --muted: #9aaac2;
+      --accent: #7c9cff;
+      --accent-2: #9a7cff;
+      --green: #83e6b2;
+      --code: #0a0f1b;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .24);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 500px at 5% -10%, rgba(124,156,255,.16), transparent 60%),
+        radial-gradient(700px 450px at 100% 0%, rgba(154,124,255,.12), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .container { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 34px 0 22px; }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 44px; height: 44px; display: grid; place-items: center;
+      border: 1px solid #526ca7; border-radius: 14px;
+      background: linear-gradient(145deg, #253a68, #282448);
+      color: #dce6ff; font-size: 22px; font-weight: 800;
+    }
+    h1 { font-size: clamp(25px, 4vw, 36px); letter-spacing: -.8px; margin: 0; }
+    .subtitle { color: var(--muted); margin: 5px 0 0; }
+    .status { color: var(--green); font-size: 12px; border: 1px solid #285845; background: #112a24; border-radius: 999px; padding: 6px 10px; white-space: nowrap; }
+    .hero { padding: 18px 0 28px; }
+    .hero h2 { font-size: clamp(20px, 3vw, 28px); margin: 0 0 8px; }
+    .hero p { color: var(--muted); max-width: 700px; margin: 0; }
+    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 20px; }
+    .search-wrap { position: relative; flex: 1 1 260px; }
+    .search-wrap span { position: absolute; left: 14px; top: 11px; color: var(--muted); }
+    .search {
+      width: 100%; border: 1px solid var(--border); background: var(--panel);
+      color: var(--text); border-radius: 12px; padding: 11px 14px 11px 40px; outline: none;
+    }
+    .search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,156,255,.13); }
+    .filter, .secondary-btn {
+      border: 1px solid var(--border); background: var(--panel); color: var(--text);
+      border-radius: 12px; padding: 10px 14px;
+    }
+    .filter:focus, .secondary-btn:focus-visible, .copy-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .sidebar, .code-card { border: 1px solid var(--border); background: rgba(18,26,43,.94); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+    .sidebar { padding: 17px; }
+    .sidebar h3 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); }
+    .nav-item {
+      width: 100%; display: flex; justify-content: space-between; gap: 12px; align-items: center;
+      text-align: left; border: 1px solid transparent; background: transparent; color: var(--text);
+      padding: 11px 12px; border-radius: 10px; margin: 3px 0;
+    }
+    .nav-item.active, .nav-item:hover { background: var(--panel-2); border-color: var(--border); }
+    .count { color: var(--muted); font-size: 12px; }
+    .tip { margin-top: 20px; padding: 13px; border: 1px solid #34466b; background: #131f38; border-radius: 12px; color: #bdcbed; font-size: 13px; }
+    .code-card { min-width: 0; }
+    .code-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px; border-bottom: 1px solid var(--border); }
+    .code-head h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 9px; }
+    .tag { font-size: 12px; color: #c4d2f2; background: #202e49; border: 1px solid #344768; padding: 3px 8px; border-radius: 999px; }
+    .copy-btn {
+      flex-shrink: 0; color: #091322; background: var(--accent); border: 0; border-radius: 10px;
+      padding: 10px 13px; font-weight: 700;
+    }
+    .copy-btn:hover { filter: brightness(1.08); }
+    .code-note { color: var(--muted); padding: 12px 20px 0; font-size: 13px; }
+    .code-shell { margin: 14px; background: var(--code); border: 1px solid #26344b; border-radius: 12px; overflow: auto; max-height: 72vh; }
+    pre { margin: 0; padding: 18px 0; color: #dbe7ff; font: 13px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; tab-size: 4; }
+    code { display: block; }
+    .code-line { display: block; min-height: 1.65em; white-space: pre; padding-right: 22px; }
+    .line-no { display: inline-block; width: 52px; padding-right: 15px; margin-right: 16px; text-align: right; color: #63738d; border-right: 1px solid #253149; user-select: none; }
+    .kw { color: #c5a0ff; } .str { color: #a5e6a1; } .comment { color: #7f91a9; font-style: italic; }
+    .type { color: #80caff; } .num { color: #ffcc8a; }
+    .empty { padding: 35px 20px; color: var(--muted); text-align: center; }
+    footer { color: var(--muted); text-align: center; padding: 30px 0 38px; font-size: 13px; }
+    .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #d9fbe8; color: #0b3923; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: var(--shadow); display: none; z-index: 10; }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { padding: 13px; }
+      .sidebar h3 { margin-left: 4px; }
+      .nav-list { display: flex; gap: 6px; overflow-x: auto; }
+      .nav-item { width: auto; white-space: nowrap; margin: 0; }
+      .tip { display: none; }
+      .code-head { padding: 16px; }
+      .code-head h2 { font-size: 18px; }
+      .copy-btn { padding: 9px 10px; }
+      .code-shell { margin: 10px; }
+      .line-no { width: 38px; margin-right: 10px; padding-right: 9px; }
+      .status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="topline">
+      <div class="brand">
+        <div class="brand-icon">&lt;/&gt;</div>
+        <div>
+          <h1>My Code Library</h1>
+          <p class="subtitle">Your programs, organized in one place.</p>
+        </div>
+      </div>
+      <div class="status">● Static site · Ready for Vercel</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Code. Learn. Reuse.</h2>
+      <p>Browse your programming practicals, search by topic, and copy source code whenever you need it. This is a static website; it does not run Java code inside the browser.</p>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span aria-hidden="true">⌕</span>
+          <input id="search" class="search" type="search" placeholder="Search programs, topics, or code..." aria-label="Search code library">
+        </div>
+        <select id="languageFilter" class="filter" aria-label="Filter by language">
+          <option value="all">All languages</option>
+          <option value="Java">Java</option>
+          <option value="C">C</option>
+          <option value="Python">Python</option>
+        </select>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h3>Programs <span id="programCount" class="count"></span></h3>
+        <div id="programList" class="nav-list"></div>
+        <div class="tip"><strong>Quick tip</strong><br>Use the search box to find algorithms, encryption methods, or any word inside your saved source code.</div>
+      </aside>
+
+      <section id="codeCard" class="code-card" aria-live="polite">
+        <div class="code-head">
+          <div>
+            <h2 id="codeTitle">CNS Practice — DES, Blowfish, RC4 &amp; RSA</h2>
+            <div class="meta"><span class="tag">Java</span><span class="tag">Cryptography</span><span class="tag">CNS Practical</span></div>
+          </div>
+          <button id="copyBtn" class="copy-btn" type="button">Copy code</button>
+        </div>
+        <div class="code-note">Original source provided by you · Line numbers are for reference.</div>
+        <div class="code-shell"><pre><code id="codeDisplay"></code></pre></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="container">Built as a single HTML file · Easy to host on Vercel</footer>
+  <div id="toast" class="toast" role="status">Code copied!</div>
+
+  <script>
+    // Add your next programs to this array. Keep each program's source inside the `code` field.
+    const programs = [
+      {
+        id: "cns-practice",
+        title: "CNS Practice — DES, Blowfish, RC4 & RSA",
+        language: "Java",
+        topics: ["Cryptography", "CNS Practical", "DES", "Blowfish", "RC4", "RSA", "Encryption", "Decryption"],
+        code: `import java.math.BigInteger;
+import java.util.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.math.BigInteger;
+public class Cnspractice{
+
+	public static void desAlgo(String s) throws Exception{
+		System.out.println("Original String : "+s);
+		KeyGenerator kg = KeyGenerator.getInstance("DES");
+		SecretKey key = kg.generateKey();
+
+		Cipher c = Cipher.getInstance("DES");
+		c.init(Cipher.ENCRYPT_MODE,key);
+		byte[] enc = c.doFinal(s.getBytes());
+		System.out.println("Encrpted : "+ Base64.getEncoder().encodeToString(enc));
+
+		c.init(Cipher.DECRYPT_MODE,key);
+		byte[] dec = c.doFinal(enc);
+		System.out.println("Decrypted : "+new String(dec));
+	}
+	public static void blowfish(String s) throws Exception{
+		System.out.println("Original String : "+s);
+		KeyGenerator kg = KeyGenerator.getInstance("BLOWFISH");
+		SecretKey key = kg.generateKey();
+
+		Cipher c = Cipher.getInstance("BLOWFISH");
+		c.init(Cipher.ENCRYPT_MODE,key);
+		byte[] enc = c.doFinal(s.getBytes());
+		System.out.println("Encrpted : "+ Base64.getEncoder().encodeToString(enc));
+
+		c.init(Cipher.DECRYPT_MODE,key);
+		byte[] dec = c.doFinal(enc);
+		System.out.println("Decrypted : "+new String(dec));
+	}
+
+	public static void RC4(String s,String key) throws Exception{
+		SecretKeySpec sk = new SecretKeySpec(key.getBytes(),"RC4");
+		Cipher c = Cipher.getInstance("RC4");
+		c.init(Cipher.ENCRYPT_MODE,sk);
+		byte[] enc = c.doFinal(s.getBytes());
+		System.out.println("Encrypted : "+Base64.getEncoder().encodeToString(enc));
+
+		c.init(Cipher.DECRYPT_MODE,sk);
+		byte[] dec = c.doFinal(enc);
+		System.out.println("Decrypted : "+new String(dec));
+	}
+	public static void RSA(){
+		BigInteger p=BigInteger.valueOf(61);
+        BigInteger q=BigInteger.valueOf(53);
+        BigInteger n=p.multiply(q);
+        BigInteger phi=(p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
+        BigInteger e=BigInteger.valueOf(17);
+        BigInteger d=e.modInverse(phi);
+        BigInteger msg=BigInteger.valueOf(65);
+        //Encryption
+        BigInteger enc=msg.modPow(e,n);
+        //Decryption
+        BigInteger dec=enc.modPow(d,n);
+        System.out.println("Public Key: ("+e+","+n+")");
+        System.out.println("Private Key:("+d+","+n+")");
+        System.out.println("Encrypted Message:"+enc);
+        System.out.println("Decrypted Message:"+dec);
+	}
+	public static void main(String[] args) throws Exception{
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Enter a MSG : ");;
+		String s = sc.nextLine();
+
+		System.out.println("DES : ");
+		desAlgo(s);
+
+		System.out.println("BLOWFISH : ");
+		blowfish(s);
+
+		System.out.print("RC4 : \\n Enter key :");
+		RC4(s,sc.nextLine());
+
+		System.out.println("RSA : ");
+		RSA();
+
+		sc.close();
+	}
+}`
+      }
+    ,
+      {
+        "id": "caesar-cipher",
+        "title": "Caesar Cipher — Encryption & Decryption",
+        "language": "Java",
+        "topics": [
+          "Cryptography",
+          "Caesar Cipher",
+          "Encryption",
+          "Decryption"
+        ],
+        "code": "import java.util.Scanner;\n\npublic class CaesarCipher {\n    public static String encrypt(String text, int key) {\n        String result = \"\";\n        for (int i = 0; i < text.length(); i++) {\n            char ch = text.charAt(i);\n            if (ch >= 'A' && ch <= 'Z') {\n                ch = (char) ('A' + (ch - 'A' + key) % 26);\n            } else if (ch >= 'a' && ch <= 'z') {\n                ch = (char) ('a' + (ch - 'a' + key) % 26);\n            }\n            result += ch;\n        }\n        return result;\n    }\n\n    public static String decrypt(String text, int key) {\n        return encrypt(text, (26 - key % 26) % 26);\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        System.out.print(\"Enter plaintext: \");\n        String text = sc.nextLine();\n        System.out.print(\"Enter key (shift): \");\n        int key = sc.nextInt();\n        key = ((key % 26) + 26) % 26;\n        String encrypted = encrypt(text, key);\n        String decrypted = decrypt(encrypted, key);\n        System.out.println(\"Encrypted text: \" + encrypted);\n        System.out.println(\"Decrypted text: \" + decrypted);\n        sc.close();\n    }\n}"
+      },
+      {
+        "id": "substitution-cipher",
+        "title": "Substitution Cipher — Encryption & Decryption",
+        "language": "Java",
+        "topics": [
+          "Cryptography",
+          "Substitution Cipher",
+          "Encryption",
+          "Decryption"
+        ],
+        "code": "import java.util.*;\n\npublic class SubstitutionCipher {\n    public static String crypto(String str, String encrypted, String a, String b) {\n        char c;\n        for (int i = 0; i < str.length(); i++) {\n            c = str.charAt(i);\n            int j = a.indexOf(c);\n            if (j != -1) {\n                encrypted = encrypted + b.charAt(j);\n            } else {\n                encrypted = encrypted + c;\n            }\n        }\n        return encrypted;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String a = \"abcdefghijklmnopqrstuvwxyz\";\n        String b = \"zyxwvutsrqponmlkjihgfedcba\";\n        System.out.print(\"Enter any string: \");\n        String str = sc.nextLine();\n        String encrypted = crypto(str, \"\", a, b);\n        String decrypted = crypto(encrypted, \"\", b, a);\n        System.out.println(\"The encrypted data is: \" + encrypted);\n        System.out.println(\"The decrypted data is: \" + decrypted);\n        sc.close();\n    }\n}"
+      },
+      {
+        "id": "week1-bitwise-java",
+        "title": "Week 1 — Java Bitwise Operations",
+        "language": "Java",
+        "topics": [
+          "CNS Practical",
+          "Bitwise Operators",
+          "OR",
+          "AND",
+          "XOR",
+          "ASCII"
+        ],
+        "code": "public class week1_2 {\n    public static void main(String[] args) {\n        String str = \"Hello World\";\n        System.out.println(\"Original String: \" + str);\n\n        System.out.println(\"\\nOR with 0:\");\n        for (int i = 0; i < str.length(); i++) {\n            System.out.print((char)(str.charAt(i) | 0));\n        }\n\n        System.out.println(\"\\n\\nAND with 0 (ASCII values):\");\n        for (int i = 0; i < str.length(); i++) {\n            System.out.print((char)(str.charAt(i) & 0) + \" \");\n        }\n\n        System.out.println(\"\\n\\nXOR with 0:\");\n        for (int i = 0; i < str.length(); i++) {\n            System.out.print((char)(str.charAt(i) ^ 0));\n        }\n\n        System.out.println(\"\\n\\nAND with 127:\");\n        for (int i = 0; i < str.length(); i++) {\n            System.out.print((char)(str.charAt(i) & 127));\n        }\n\n        System.out.println(\"\\n\\nOR with 127 (ASCII values):\");\n        for (int i = 0; i < str.length(); i++) {\n            System.out.print((char)(str.charAt(i) | 127));\n        }\n\n        System.out.println(\"\\n\\nXOR with 127 (ASCII values):\");\n        for (int i = 0; i < str.length(); i++) {\n            System.out.print((char)(str.charAt(i) ^ 127));\n        }\n        System.out.println();\n    }\n}"
+      },
+      {
+        "id": "bitwise-c",
+        "title": "Bitwise Operations — C",
+        "language": "C",
+        "topics": [
+          "CNS Practical",
+          "Bitwise Operators",
+          "OR",
+          "AND",
+          "XOR",
+          "ASCII"
+        ],
+        "code": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char str[] = \"Hello World\";\n    char str1[12];\n    int i, len;\n    len = strlen(str);\n\n    for (i = 0; i < len; i++) {\n        str1[i] = str[i] ^ 0;\n        printf(\"%c\", str1[i]);\n    }\n\n    printf(\"\\n\");\n    printf(\"AND with 127: \");\n    for (i = 0; i < len; i++) {\n        printf(\"%c\", str[i] & 127);\n    }\n\n    printf(\"\\nOR with 127: \");\n    for (i = 0; i < len; i++) {\n        printf(\"%c\", str[i] | 127);\n    }\n\n    printf(\"\\nXOR with 127: \");\n    for (i = 0; i < len; i++) {\n        printf(\"%c\", str[i] ^ 127);\n    }\n    return 0;\n}"
+      },
+      {
+        "id": "hill-cipher",
+        "title": "Hill Cipher — 2×2 / 3×3 Matrix",
+        "language": "Java",
+        "topics": [
+          "Cryptography",
+          "Hill Cipher",
+          "Matrix",
+          "Encryption",
+          "Decryption"
+        ],
+        "code": "import java.util.Scanner;\n\npublic class HillCipher {\n    static int[][] key;\n    static int[][] inverse;\n    static int n;\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        System.out.print(\"Enter matrix size (2 or 3): \");\n        n = sc.nextInt();\n        if (n != 2 && n != 3) {\n            System.out.println(\"Only 2x2 and 3x3 are supported.\");\n            sc.close();\n            return;\n        }\n\n        key = new int[n][n];\n        inverse = new int[n][n];\n        System.out.println(\"Enter \" + n + \"x\" + n + \" key matrix:\");\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) key[i][j] = sc.nextInt();\n        }\n\n        sc.nextLine();\n        System.out.print(\"Enter message: \");\n        String msg = sc.nextLine().toLowerCase().replaceAll(\"[^a-z]\", \"\");\n        if (msg.isEmpty()) {\n            System.out.println(\"Enter a valid message.\");\n            sc.close();\n            return;\n        }\n\n        while (msg.length() % n != 0) msg += \"x\";\n        if (!findInverse()) {\n            System.out.println(\"Key matrix is not invertible modulo 26.\");\n            sc.close();\n            return;\n        }\n\n        String enc = process(msg, key);\n        String dec = process(enc, inverse);\n        System.out.println(\"Padded message: \" + msg);\n        System.out.println(\"Encrypted string: \" + enc);\n        System.out.println(\"Decrypted string: \" + dec);\n        sc.close();\n    }\n\n    static String process(String msg, int[][] matrix) {\n        StringBuilder result = new StringBuilder();\n        for (int start = 0; start < msg.length(); start += n) {\n            for (int i = 0; i < n; i++) {\n                int sum = 0;\n                for (int j = 0; j < n; j++) {\n                    int value = msg.charAt(start + j) - 'a';\n                    sum += matrix[i][j] * value;\n                }\n                result.append((char)(mod(sum) + 'a'));\n            }\n        }\n        return result.toString();\n    }\n\n    static int mod(int x) {\n        return ((x % 26) + 26) % 26;\n    }\n\n    static int determinant(int[][] a, int size) {\n        if (size == 1) return a[0][0];\n        if (size == 2) return a[0][0] * a[1][1] - a[0][1] * a[1][0];\n        return a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1])\n             - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0])\n             + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]);\n    }\n\n    static int modInverse(int value) {\n        for (int i = 1; i < 26; i++) if (mod(value * i) == 1) return i;\n        return -1;\n    }\n\n    static int[][] minorMatrix(int[][] a, int row, int col) {\n        int[][] minor = new int[n - 1][n - 1];\n        int r = 0;\n        for (int i = 0; i < n; i++) {\n            if (i == row) continue;\n            int c = 0;\n            for (int j = 0; j < n; j++) {\n                if (j == col) continue;\n                minor[r][c++] = a[i][j];\n            }\n            r++;\n        }\n        return minor;\n    }\n\n    static boolean findInverse() {\n        int det = mod(determinant(key, n));\n        int detInv = modInverse(det);\n        if (detInv == -1) return false;\n        int[][] adj = new int[n][n];\n\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                int[][] minor = minorMatrix(key, i, j);\n                int cofactor = determinant(minor, n - 1);\n                if ((i + j) % 2 != 0) cofactor = -cofactor;\n                adj[j][i] = mod(cofactor);\n            }\n        }\n\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) inverse[i][j] = mod(adj[i][j] * detInv);\n        }\n        return true;\n    }\n}"
+      }
+    ];
+
+    const programList = document.getElementById("programList");
+    const searchInput = document.getElementById("search");
+    const languageFilter = document.getElementById("languageFilter");
+    const programCount = document.getElementById("programCount");
+    const codeTitle = document.getElementById("codeTitle");
+    const codeDisplay = document.getElementById("codeDisplay");
+    const copyBtn = document.getElementById("copyBtn");
+    const toast = document.getElementById("toast");
+    let selectedId = programs[0]?.id ?? null;
+    let visiblePrograms = [...programs];
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[ch]);
+    }
+
+    function highlightJava(line, language = "Java") {
+      // Lightweight highlighting; source remains selectable and copyable.
+      let safe = escapeHtml(line);
+      if (/^\s*\/\//.test(line)) return `<span class="comment">${safe}</span>`;
+      safe = safe.replace(/(&quot;.*?&quot;|".*?")/g, '<span class="str">$1</span>');
+      safe = safe.replace(/\b(public|private|protected|static|void|class|new|return|throws|throw|import|package|try|catch|if|else|for|while|this|true|false|null)\b/g, '<span class="kw">$1</span>');
+      safe = safe.replace(/\b(String|BigInteger|Scanner|KeyGenerator|SecretKey|Cipher|SecretKeySpec|Base64|Exception|byte)\b/g, '<span class="type">$1</span>');
+      safe = safe.replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+      return safe;
+    }
+
+    function filteredPrograms() {
+      const query = searchInput.value.trim().toLowerCase();
+      const language = languageFilter.value;
+      return programs.filter(program => {
+        const languageMatch = language === "all" || program.language === language;
+        const searchable = [program.title, program.language, ...program.topics, program.code].join(" ").toLowerCase();
+        return languageMatch && (!query || searchable.includes(query));
+      });
+    }
+
+    function renderList() {
+      visiblePrograms = filteredPrograms();
+      programCount.textContent = `(${visiblePrograms.length})`;
+      programList.innerHTML = "";
+      if (!visiblePrograms.length) {
+        programList.innerHTML = '<div class="empty">No matching programs found.</div>';
+        renderCode(null);
+        return;
+      }
+      if (!visiblePrograms.some(p => p.id === selectedId)) selectedId = visiblePrograms[0].id;
+      visiblePrograms.forEach(program => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "nav-item" + (program.id === selectedId ? " active" : "");
+        button.innerHTML = `<span>${escapeHtml(program.title)}</span><span class="count">${escapeHtml(program.language)}</span>`;
+        button.addEventListener("click", () => {
+          selectedId = program.id;
+          renderList();
+        });
+        programList.appendChild(button);
+      });
+      renderCode(visiblePrograms.find(p => p.id === selectedId));
+    }
+
+    function renderCode(program) {
+      if (!program) {
+        codeTitle.textContent = "No program selected";
+        codeDisplay.innerHTML = "";
+        copyBtn.disabled = true;
+        copyBtn.style.opacity = ".5";
+        return;
+      }
+      copyBtn.disabled = false;
+      copyBtn.style.opacity = "1";
+      codeTitle.textContent = program.title;
+      const codeCard = document.getElementById("codeCard");
+      const tags = programCardTags(program);
+      let meta = codeCard.querySelector(".meta");
+      meta.innerHTML = tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+      codeDisplay.innerHTML = program.code.split("\n").map((line, index) =>
+        `<span class="code-line"><span class="line-no">${index + 1}</span>${highlightJava(line, program.language) || " "}</span>`
+      ).join("");
+      copyBtn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(program.code);
+          toast.textContent = "Code copied to clipboard!";
+          toast.style.display = "block";
+          setTimeout(() => toast.style.display = "none", 1800);
+        } catch (error) {
+          const area = document.createElement("textarea");
+          area.value = program.code;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand("copy");
+          area.remove();
+          toast.textContent = "Code copied to clipboard!";
+          toast.style.display = "block";
+          setTimeout(() => toast.style.display = "none", 1800);
+        }
+      };
+    }
+
+    function programCardTags(program) {
+      return [program.language, ...program.topics.slice(0, 2)];
+    }
+
+    searchInput.addEventListener("input", renderList);
+    languageFilter.addEventListener("change", renderList);
+    renderList();
+  </script>
+</body>
+</html>
