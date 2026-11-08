@@ -267,7 +267,8 @@
       <a class="nav-link" href="#blowfish">07. Blowfish Algorithm</a>
       <a class="nav-link" href="#rc4">08. RC4 Algorithm</a>
       <a class="nav-link" href="#rsa">09. RSA Algorithm</a>
-      <a class="nav-link" href="#diffie-hellman">10. Diffie-Hellman Key Exchange</a>
+      <a class="nav-link" href="#diffie-hellman">10a. Diffie-Hellman java</a>
+        <a class="nav-link" href="#diffie-hellman">10b. Diffie-Hellman Key html-js</a>
       <a class="nav-link" href="#sha">11. SHA-1 Hashing</a>
       <a class="nav-link" href="#md5">12. MD5 Hashing</a>
       <a class="nav-link" href="#hill-complete">13. Hill Cipher (Encryption &amp; Decryption)</a>
@@ -669,7 +670,7 @@ public class RSA {
 
       <article class="program" id="diffie-hellman" data-search="10. diffie-hellman key exchange deffiehellman java cryptography">
         <div class="program-heading">
-          <h3>10. Diffie-Hellman Key Exchange</h3>
+          <h3>10a. Diffie-Hellman Key Exchange</h3>
           <span class="language">JAVA</span>
         </div>
         <div class="code-card">
@@ -703,7 +704,78 @@ public class DeffieHellman {
 }</code></pre>
         </div>
       </article>
+      <article class="program" id="diffie-hellman" data-search="10. diffie-hellman key exchange deffiehellman html javascript cryptography">
 
+    <div class="program-heading">
+        <h3>10b. Diffie-Hellman Key Exchange</h3>
+        <span class="language">HTML - JS</span>
+    </div>
+
+    <div class="code-card">
+
+        <div class="code-toolbar">
+            <span class="code-language">HTML - JS</span>
+            <button class="copy-btn" type="button">Copy code</button>
+        </div>
+
+        <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Hellman Key Exchange&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+    &lt;h3&gt;Hellman Key Exchange&lt;/h3&gt;
+
+    &lt;label&gt;Prime Number (p):&lt;/label&gt;
+    &lt;input type="number" id="p"&gt;&lt;br&gt;&lt;br&gt;
+
+    &lt;label&gt;Generator (g):&lt;/label&gt;
+    &lt;input type="number" id="g"&gt;&lt;br&gt;&lt;br&gt;
+
+    &lt;label&gt;Alice's private key (a):&lt;/label&gt;
+    &lt;input type="number" id="a"&gt;&lt;br&gt;&lt;br&gt;
+
+    &lt;label&gt;Bob's private key (b):&lt;/label&gt;
+    &lt;input type="number" id="b"&gt;&lt;br&gt;&lt;br&gt;
+
+    &lt;button onclick="calculate()"&gt;Generate Shared Key&lt;/button&gt;
+
+    &lt;h4&gt;Result&lt;/h4&gt;
+    &lt;label id="result"&gt;&lt;/label&gt;
+
+    &lt;script&gt;
+        function calculate() {
+
+            const p = BigInt(document.getElementById("p").value);
+            const g = BigInt(document.getElementById("g").value);
+            const a = BigInt(document.getElementById("a").value);
+            const b = BigInt(document.getElementById("b").value);
+
+            if (p &lt;= 2n || g &lt;= 0n || a &lt;= 0n || b &lt;= 0n || g &gt;= p) {
+                document.getElementById("result").innerHTML =
+                    "Enter a Valid positive Number";
+                return;
+            }
+
+            const A = (g ** a) % p;
+            const B = (g ** b) % p;
+
+            const Alicekey = (B ** a) % p;
+            const Bobskey = (A ** b) % p;
+
+            document.getElementById("result").innerHTML =
+                "Alices shared Key: " + Alicekey +
+                "&lt;br&gt;&lt;br&gt;" +
+                "Bobs shared Key: " + Bobskey;
+        }
+    &lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    </div>
+</article>
       <article class="program" id="sha" data-search="11. sha-1 hashing sha java cryptography">
         <div class="program-heading">
           <h3>11. SHA-1 Hashing</h3>
